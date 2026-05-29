@@ -1,0 +1,96 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Stores user settings, names, and relationship setup metadata.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The unique Firebase authenticated user UID." },
+        "username": { "type": "string", "description": "Unique username chosen during authentication." },
+        "userMode": { "type": "string", "enum": ["couple", "single"], "description": "App experience preference mode." },
+        "partner1": { "type": "string", "description": "Display name of Partner 1." },
+        "partner2": { "type": "string", "description": "Display name of Partner 2 or dream crush." },
+        "relationshipDate": { "type": "string", "description": "Relationship starting anniversary or crush date." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Database document creation timestamp." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Database document modified timestamp." }
+      },
+      "required": ["userId", "userMode", "partner1", "partner2", "relationshipDate"]
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "A single chat message exchange in the AI advisor module.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique message ID." },
+        "sender": { "type": "string", "enum": ["user", "bot"], "description": "Identify message source." },
+        "text": { "type": "string", "description": "Message content text." },
+        "timestamp": { "type": "string", "format": "date-time", "description": "Creation timestamp." }
+      },
+      "required": ["id", "sender", "text", "timestamp"]
+    },
+    "DiaryEntry": {
+      "title": "DiaryEntry",
+      "description": "A personal notebook journal entry saved securely.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique diary entry ID." },
+        "title": { "type": "string", "description": "Title of the diary entry." },
+        "content": { "type": "string", "description": "Private text content." },
+        "mood": { "type": "string", "description": "Mood tag accompanying the entry." },
+        "timestamp": { "type": "string", "format": "date-time", "description": "Creation timestamp." }
+      },
+      "required": ["id", "title", "content", "mood", "timestamp"]
+    },
+    "BondImage": {
+      "title": "BondImage",
+      "description": "An AI-generated relationship bond image visualizing current themes.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique bond image ID." },
+        "url": { "type": "string", "description": "Stored image base64, data URI, or secure cloud asset url." },
+        "prompt": { "type": "string", "description": "Prompt used to generate visual representations." },
+        "theme": { "type": "string", "description": "Selected relationship or visual style context." },
+        "timestamp": { "type": "string", "format": "date-time", "description": "Creation timestamp." }
+      },
+      "required": ["id", "url", "prompt", "theme", "timestamp"]
+    },
+    "RelationshipInsights": {
+      "title": "RelationshipInsights",
+      "description": "A calculated/analyzed metric summarizing current romantic bond health and advice.",
+      "type": "object",
+      "properties": {
+        "bondStrength": { "type": "integer", "description": "Main bond meter." },
+        "communicationScore": { "type": "integer", "description": "Communication metrics." },
+        "emotionalAlignment": { "type": "integer", "description": "Emotional alignment metrics." },
+        "dailyAffirmation": { "type": "string", "description": "Tailored motivational quote." },
+        "keyAdvice": { "type": "string", "description": "Direct actionable relationship insights." },
+        "recentThemes": { "type": "array", "description": "Extracted key themes of current interactions." },
+        "conflictStrategies": { "type": "array", "description": "Resolutions custom generated." },
+        "confessionStrategies": { "type": "array", "description": "Targeted singles mode advice plans." }
+      },
+      "required": ["bondStrength", "communicationScore", "emotionalAlignment", "dailyAffirmation", "keyAdvice"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Owner user settings document containing user parameters."
+    },
+    "/users/{userId}/chatHistory/{messageId}": {
+      "schema": "ChatMessage",
+      "description": "Unbounded subcollection for user conversation memories."
+    },
+    "/users/{userId}/diaryEntries/{entryId}": {
+      "schema": "DiaryEntry",
+      "description": "Unbounded subcollection storing personal diaries and notes."
+    },
+    "/users/{userId}/bondImages/{imageId}": {
+      "schema": "BondImage",
+      "description": "Unbounded subcollection of generated romantic canvases."
+    },
+    "/users/{userId}/insights/latest": {
+      "schema": "RelationshipInsights",
+      "description": "Latest generated counseling metrics and strategic resolution maps."
+    }
+  }
+}

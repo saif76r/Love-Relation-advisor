@@ -1,0 +1,109 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Auth & Id Helper Functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // 3. Entity Schema Validation Helpers
+    function isValidUser(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.username is string && data.username.size() <= 64 &&
+             (data.userMode == 'couple' || data.userMode == 'single') &&
+             data.partner1 is string && data.partner1.size() <= 100 &&
+             data.partner2 is string && data.partner2.size() <= 100 &&
+             data.relationshipDate is string && data.relationshipDate.size() <= 32;
+    }
+
+    function isValidChatMessage(data, msgId) {
+      return data.id == msgId &&
+             (data.sender == 'user' || data.sender == 'bot') &&
+             data.text is string && data.text.size() <= 20000 &&
+             data.timestamp is string && data.timestamp.size() <= 64;
+    }
+
+    function isValidDiaryEntry(data, entryId) {
+      return data.id == entryId &&
+             data.title is string && data.title.size() <= 200 &&
+             data.content is string && data.content.size() <= 50000 &&
+             data.mood is string && data.mood.size() <= 50 &&
+             data.timestamp is string && data.timestamp.size() <= 64;
+    }
+
+    function isValidBondImage(data, imgId) {
+      return data.id == imgId &&
+             data.url is string && data.url.size() <= 2000000 &&
+             data.prompt is string && data.prompt.size() <= 1000 &&
+             data.theme is string && data.theme.size() <= 150 &&
+             data.timestamp is string && data.timestamp.size() <= 64;
+    }
+
+    function isValidInsights(data) {
+      return data.bondStrength is int && data.bondStrength >= 0 && data.bondStrength <= 100 &&
+             data.communicationScore is int && data.communicationScore >= 0 && data.communicationScore <= 100 &&
+             data.emotionalAlignment is int && data.emotionalAlignment >= 0 && data.emotionalAlignment <= 100 &&
+             data.dailyAffirmation is string && data.dailyAffirmation.size() <= 2000 &&
+             data.keyAdvice is string && data.keyAdvice.size() <= 5000;
+    }
+
+    // 4. Match Blocks for Collections
+
+    // Main User Document
+    match /users/{userId} {
+      allow read, delete: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) && isValidUser(incoming()) && incoming().userId == existing().userId;
+
+      // Subcollection: Chat History
+      match /chatHistory/{messageId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidId(messageId) && isValidChatMessage(incoming(), messageId);
+        allow delete: if isOwner(userId);
+      }
+
+      // Subcollection: Diary Entries
+      match /diaryEntries/{entryId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidId(entryId) && isValidDiaryEntry(incoming(), entryId);
+        allow delete: if isOwner(userId);
+      }
+
+      // Subcollection: Bond Images
+      match /bondImages/{imageId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidId(imageId) && isValidBondImage(incoming(), imageId);
+        allow delete: if isOwner(userId);
+      }
+
+      // Subcollection: Insights Container
+      match /insights/latest {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidInsights(incoming());
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

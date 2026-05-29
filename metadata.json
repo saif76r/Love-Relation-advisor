@@ -1,0 +1,6 @@
+{
+  "name": "Love & Relationship Adviser",
+  "description": "An empathetic AI advisor providing couple conflict resolution, daily insights, and AI-generated visuals to strengthen relationship bonds in a private, locally-encrypted vault.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

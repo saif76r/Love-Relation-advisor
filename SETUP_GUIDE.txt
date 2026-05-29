@@ -1,0 +1,23 @@
+LOVE RELATIONSHIP ADVISER - FIXED SETUP
+
+1. Install dependencies
+npm install
+
+2. Create .env file in project root
+
+Example:
+GEMINI_API_KEY=your_actual_gemini_api_key
+
+3. Run project
+npm run dev
+
+4. Open browser
+http://localhost:3000
+
+5. Vercel deployment
+Add GEMINI_API_KEY inside:
+Project Settings -> Environment Variables
+
+IMPORTANT:
+- Never upload .env to GitHub
+- Regenerate any exposed API keys
